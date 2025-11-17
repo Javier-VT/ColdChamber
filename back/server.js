@@ -7,16 +7,26 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json()); // para parsear JSON en el body
 
-// Endpoints ejemplo
-app.get('/esp32/ultimo', (req, res) => {
-  res.json({ temperatura: null, humedad: null, fecha: null });
-});
+let ultimoDato = { temperatura: null, humedad: null, fecha: null };
+let comandoBuzzer = "OFF";
 
 app.post('/esp32/data', (req, res) => {
   const { temperatura, humedad } = req.body;
-  console.log("Dato recibido:", temperatura, humedad);
-  // lógica que quieras hacer con los datos...
+  ultimoDato = { temperatura, humedad, fecha: new Date().toISOString() };
+
+  // lógica para el buzzer
+  if (temperatura >= 27) comandoBuzzer = "ON";
+  else comandoBuzzer = "OFF";
+
   res.json({ status: "ok" });
+});
+
+app.get('/esp32/buzzer', (req, res) => {
+  res.json({ buzzer: comandoBuzzer });
+});
+
+app.get('/esp32/ultimo', (req, res) => {
+  res.json(ultimoDato);
 });
 
 app.listen(port, () => {
